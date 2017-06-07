@@ -4,7 +4,7 @@ import {Set as ImmutableSet, Map as ImmutableMap} from 'immutable'
 import EE from 'eventemitter3'
 import * as firebase from 'firebase'
 
-import {Card, List, Toolbar, Drawer} from './components'
+import {Card, List, Toolbar, Drawer, TextField} from './components'
 
 const events = new EE()
 
@@ -79,19 +79,19 @@ class Main extends PureComponent {
 				<Drawer
 					events={events}
 				/>
-				<h2>Welcome, {this.state.userName}</h2>
 
 				<Card
-					ref="enterForm"
+					ref="loginForm"
 					visible={!this.state.userConnected}
+					title={`Welcome, ${this.state.userName}`}
 				>
-					<p>
-						Name:
-						<input type="text"
-							ref="userNameInput"
-							onChange={e=>this.handleUserNameChange(e)}
-						></input>
-					</p>
+					<TextField
+						ref="userNameInput"
+						onChange={e=>this.handleUserNameChange(e)}
+						label="Name"
+						helperText="Whats your name?"
+					>
+					</TextField>
 					<section className="mdc-card__actions">
 						<button className="mdc-button mdc-button--raised mdc-button--accent"
 							ref="connectButton"
@@ -100,8 +100,9 @@ class Main extends PureComponent {
 					</section>
 				</Card>
 
-				<Card>
-					<h1>Connected people:</h1>
+				<Card
+					title="Connected people"
+				>
 					<ul ref="connectedUsers">
 						{users}
 					</ul>
