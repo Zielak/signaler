@@ -23,6 +23,14 @@ module.exports = {
 			{
 				test: /\.css$/,
 				use: [ 'style-loader', 'css-loader' ]
+			},
+			{
+				test: /\.png$/,
+				use: [ 'file-loader?name=[name].[ext]&publicPath=assets/icon/&outputPath=icon/' ]
+			},
+			{
+				test: /\.json$/,
+				use: [ 'file-loader?name=[name].[ext]' ]
 			}
 		]
 	},

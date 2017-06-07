@@ -95,3 +95,10 @@ window.addEventListener('beforeunload', (e) => {
 	removeUser()
 })
 
+import '../assets/icon/meeple-128.png'
+import '../assets/icon/meeple-144.png'
+import '../assets/icon/meeple-152.png'
+import '../assets/icon/meeple-192.png'
+import '../assets/icon/meeple-256.png'
+
+import '../manifest.json'
