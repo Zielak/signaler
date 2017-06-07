@@ -4,6 +4,10 @@ import {Set as ImmutableSet, Map as ImmutableMap} from 'immutable'
 import EE from 'eventemitter3'
 import * as firebase from 'firebase'
 
+import {Card, List, Toolbar, Drawer} from './components'
+
+const events = new EE()
+
 class Main extends PureComponent {
 
 	constructor(props, context){
@@ -11,10 +15,15 @@ class Main extends PureComponent {
 
 		this.state = {
 			userName: undefined,
+			userConnected: false,
 			connectedUsers: new ImmutableMap(),
+			toolbar: {
+				fixed: true,
+				waterfall: true,
+			},
 		}
 
-		Main.events.on('updateUsers', ({command, users}) => {
+		events.on('updateUsers', ({command, users}) => {
 			if(command === 'UPDATE'){
 				users.forEach( el => {
 					this.setState(prev => ({
@@ -34,13 +43,13 @@ class Main extends PureComponent {
 	handleConnectClick(e){
 		const input = this.refs.userNameInput
 		if(input.value.length > 1){
-			enterForm.style.display = 'none'
+			this.state.userConnected = true
 
 			this.setState(prev => ({
 				userName: input.value
 			}))
 
-			Main.events.emit('connect', input.value)
+			events.emit('connect', input.value)
 		} else {
 			input.focus()
 		}
@@ -54,17 +63,28 @@ class Main extends PureComponent {
 	}
 
 	render(){
+		const { toolbar } = this.state;
+		
 		var users = []
 		this.state.connectedUsers.forEach((v, k) => users.push(<li key={k}>{v}</li>))
 		
 		return (
-			<main>
+			<main ref='main' className={toolbar.fixed ? 'mdc-toolbar-fixed-adjust' : ''}>
+				<Toolbar
+					fixed={toolbar.fixed}
+					fixedAdjustRef='main'
+					waterfall={toolbar.waterfall}
+					events={events}
+				/>
+				<Drawer
+					events={events}
+				/>
 				<h2>Welcome, {this.state.userName}</h2>
-				<h1>Connected people:</h1>
-				<ul ref="connectedUsers">
-					{users}
-				</ul>
-				<div id="enterForm">
+
+				<Card
+					ref="enterForm"
+					visible={!this.state.userConnected}
+				>
 					<p>
 						Name:
 						<input type="text"
@@ -72,20 +92,27 @@ class Main extends PureComponent {
 							onChange={e=>this.handleUserNameChange(e)}
 						></input>
 					</p>
-					<a
-						href="#"
-						ref="connectButton"
-						onClick={e=>this.handleConnectClick(e)}
-						>
-						Connect
-					</a>
-				</div>
+					<section className="mdc-card__actions">
+						<button className="mdc-button mdc-button--raised mdc-button--accent"
+							ref="connectButton"
+							onClick={e=>this.handleConnectClick(e)}
+						>Connect</button>
+					</section>
+				</Card>
+
+				<Card>
+					<h1>Connected people:</h1>
+					<ul ref="connectedUsers">
+						{users}
+					</ul>
+				</Card>
+
 			</main>
 		)
 	}
 
 }
 
-Main.events = new EE()
+Main.events = events
 
 export default Main

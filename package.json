@@ -1,7 +1,7 @@
 {
   "name": "signaler",
   "version": "0.1.0",
-  "description": "Signaler for firebase",
+  "description": "Testing WebRTC and Firebase and other stuff",
   "license": "ISC",
   "author": {
     "name": "Darek Greenly",
@@ -20,11 +20,21 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@material/animation": "^0.2.3",
+    "@material/card": "^0.2.2",
+    "@material/drawer": "^0.4.3",
+    "@material/form-field": "^0.2.6",
+    "@material/list": "^0.2.9",
+    "@material/ripple": "^0.6.2",
+    "@material/toolbar": "^0.3.3",
     "eventemitter3": "^2.0.3",
     "firebase": "^4.1.1",
     "immutable": "^3.8.1",
+    "material-components-web": "^0.12.1",
+    "prop-types": "^15.5.10",
     "react": "^15.5.4",
-    "react-dom": "^15.5.4"
+    "react-dom": "^15.5.4",
+    "webrtc-adapter": "^4.0.0"
   },
   "devDependencies": {
     "buble-loader": "^0.4.1",
