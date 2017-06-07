@@ -14,18 +14,26 @@ class Main extends PureComponent {
 			connectedUsers: new ImmutableMap(),
 		}
 
-		Main.events.on('updateUsers', allUsers => {
-			allUsers.forEach( el => {
-				this.setState(prev => ({
-					connectedUsers: prev.connectedUsers.set(el.key, el.name)
-				}))
-			})
+		Main.events.on('updateUsers', ({command, users}) => {
+			if(command === 'UPDATE'){
+				users.forEach( el => {
+					this.setState(prev => ({
+						connectedUsers: prev.connectedUsers.set(el.key, el.name)
+					}))
+				})
+			} else if (command === 'REMOVE') {
+				users.forEach( el => {
+					this.setState(prev => ({
+						connectedUsers: prev.connectedUsers.remove(el.key)
+					}))
+				})
+			}
 		})
 	}
 
 	handleConnectClick(e){
 		const input = this.refs.userNameInput
-		if(input.value.length > 3){
+		if(input.value.length > 1){
 			enterForm.style.display = 'none'
 
 			this.setState(prev => ({
@@ -51,6 +59,8 @@ class Main extends PureComponent {
 		
 		return (
 			<main>
+				<h2>Welcome, {this.state.userName}</h2>
+				<h1>Connected people:</h1>
 				<ul ref="connectedUsers">
 					{users}
 				</ul>

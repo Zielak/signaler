@@ -18,8 +18,6 @@ const config = {
 const state = {
 	userName: undefined,
 	userKey: undefined,
-
-	connectedUsers: []
 }
 
 const log = console.log.bind(console)
@@ -42,13 +40,23 @@ document.addEventListener('DOMContentLoaded', function() {
 	var users = firebase.database().ref('users')
 
 	users.on('value', snapshot => {
+		const arr = []
 		snapshot.forEach(el => {
-			state.connectedUsers.push({
+			arr.push({
 				key: el.key,
 				name: el.val().name
 			})
 		})
-		Main.events.emit('updateUsers', state.connectedUsers)
+		Main.events.emit('updateUsers', ({
+			users: arr,
+			command: 'UPDATE'
+		}))
+	})
+	users.on('child_removed', oldSnapshot => {
+		Main.events.emit('updateUsers', {
+			users: [oldSnapshot],
+			command: 'REMOVE'
+		})
 	})
 
 
