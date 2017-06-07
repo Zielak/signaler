@@ -4,7 +4,7 @@ import {Set as ImmutableSet, Map as ImmutableMap} from 'immutable'
 import EE from 'eventemitter3'
 import * as firebase from 'firebase'
 
-import {Card, List, Toolbar, Drawer, TextField} from './components'
+import {Card, List, Toolbar, Drawer, TextField, Select} from './components'
 
 const events = new EE()
 
@@ -92,6 +92,17 @@ class Main extends PureComponent {
 						helperText="Whats your name?"
 					>
 					</TextField>
+					<Select>
+						<li className="mdc-list-item" role="option" aria-disabled="true">
+							Bread, Cereal, Rice, and Pasta
+						</li>
+						<li className="mdc-list-item" role="option" aria-disabled="true">
+							Milk, Yogurt, and Cheese
+						</li>
+						<li className="mdc-list-item" role="option" aria-disabled="true">
+							Fats, Oils, and Sweets
+						</li>
+					</Select>
 					<section className="mdc-card__actions">
 						<button className="mdc-button mdc-button--raised mdc-button--accent"
 							ref="connectButton"
