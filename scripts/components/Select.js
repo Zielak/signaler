@@ -2,6 +2,8 @@ import React, {PureComponent} from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
 
+import Menu from './Menu'
+
 import {Set as ImmutableSet, Map as ImmutableMap} from 'immutable'
 
 import {MDCSelect, MDCSelectFoundation} from '@material/select'
@@ -49,9 +51,11 @@ class Select extends PureComponent {
 				this.refs.root.tabIndex = -1;
 			},
 			getComputedStyleValue: (prop) => window.getComputedStyle(this.refs.root).getPropertyValue(prop),
-			setStyle: (propertyName, value) => this.refs.root.style.setProperty(propertyName, value),
+			setStyle: (propertyName, value) => this.setState(prev => ({
+				style: prev.style.set(propertyName, value)
+			})),
 			create2dRenderingContext: () => document.createElement('canvas').getContext('2d'),
-			setMenuElStyle: (propertyName, value) => this.refs.menu.style.setProperty(propertyName, value),
+			setMenuElStyle: (propertyName, value) => this.refs.menu.setStyle(propertyName, value),
 			setMenuElAttr: (attr, value) => this.refs.menu.setAttribute(attr, value),
 			rmMenuElAttr: (attr) => this.refs.menu.removeAttribute(attr),
 			getMenuElOffsetHeight: () => this.refs.menu.offsetHeight,
@@ -61,10 +65,10 @@ class Select extends PureComponent {
 				this.selectedText_.textContent = selectedTextContent;
 			},
 			getNumberOfOptions: () => this.props.children.length,
-			getTextForOptionAtIndex: (index) => this.props.children[index].textContent,
-			getValueForOptionAtIndex: (index) => this.props.children[index].id || this.props.children[index].textContent,
-			setAttrForOptionAtIndex: (index, attr, value) => this.props.children[index].setAttribute(attr, value),
-			rmAttrForOptionAtIndex: (index, attr) => this.props.children[index].removeAttribute(attr),
+			getTextForOptionAtIndex: (index) => this.props.children[index].props.children,
+			getValueForOptionAtIndex: (index) => this.props.children[index].props.id || this.props.children[index].props.children,
+			setAttrForOptionAtIndex: (index, attr, value) => this.props.children[index].props[attr] = value,
+			rmAttrForOptionAtIndex: (index, attr) => delete this.props.children[index].props[attr],
 			getOffsetTopForOptionAtIndex: (index) => this.props.children[index].offsetTop,
 			registerMenuInteractionHandler: (type, handler) => this.refs.menu.listen(type, handler),
 			deregisterMenuInteractionHandler: (type, handler) => this.refs.menu.unlisten(type, handler),
@@ -88,11 +92,9 @@ class Select extends PureComponent {
 				<span className="mdc-select__selected-text">
 					{this.props.selectedText}
 				</span>
-				<div ref="menu" className="mdc-simple-menu mdc-select__menu">
-					<ul className="mdc-list mdc-simple-menu__items">
-						{this.props.children}
-					</ul>
-				</div>
+				<Menu ref="menu">
+					{this.props.children}
+				</Menu>
 			</div>
 		)
 	}
