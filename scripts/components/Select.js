@@ -1,12 +1,13 @@
-import React, {PureComponent} from 'react'
+import React, {PureComponent, Children} from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
+import {Set as ImmutableSet, Map as ImmutableMap} from 'immutable'
 
 import Menu from './Menu'
 
-import {Set as ImmutableSet, Map as ImmutableMap} from 'immutable'
-
 import {MDCSelect, MDCSelectFoundation} from '@material/select'
+
+const {CHANGE_EVENT} = MDCSelectFoundation.strings
 
 class Select extends PureComponent {
 
@@ -17,6 +18,8 @@ class Select extends PureComponent {
 		this.state = {
 			style: new ImmutableMap(),
 			classes: new ImmutableSet(),
+			children: props.children,
+			selectedText: '',
 		}
 
 		if(props.multiline){
@@ -41,38 +44,65 @@ class Select extends PureComponent {
 			rmAttr: (attr, value) => this.refs.root.removeAttribute(attr, value),
 
 			computeBoundingRect: () => this.refs.root.getBoundingClientRect(),
-			registerInteractionHandler: (type, handler) => this.refs.root.addEventListener(type, handler),
-			deregisterInteractionHandler: (type, handler) => this.refs.root.removeEventListener(type, handler),
+			registerInteractionHandler: (type, handler) => {
+				this.refs.root.addEventListener(type, handler)
+			},
+			deregisterInteractionHandler: (type, handler) => {
+				this.refs.root.removeEventListener(type, handler)
+			},
+
 			focus: () => this.refs.root.focus(),
 			makeTabbable: () => {
-				this.refs.root.tabIndex = 0;
+				this.refs.root.tabIndex = 0
 			},
 			makeUntabbable: () => {
-				this.refs.root.tabIndex = -1;
+				this.refs.root.tabIndex = -1
 			},
+
 			getComputedStyleValue: (prop) => window.getComputedStyle(this.refs.root).getPropertyValue(prop),
 			setStyle: (propertyName, value) => this.setState(prev => ({
 				style: prev.style.set(propertyName, value)
 			})),
 			create2dRenderingContext: () => document.createElement('canvas').getContext('2d'),
+
 			setMenuElStyle: (propertyName, value) => this.refs.menu.setStyle(propertyName, value),
 			setMenuElAttr: (attr, value) => this.refs.menu.setAttribute(attr, value),
 			rmMenuElAttr: (attr) => this.refs.menu.removeAttribute(attr),
 			getMenuElOffsetHeight: () => this.refs.menu.offsetHeight,
-			openMenu: (focusIndex) => this.refs.menu.show({focusIndex}),
-			isMenuOpen: () => this.refs.menu.open,
-			setSelectedTextContent: (selectedTextContent) => {
-				this.selectedText_.textContent = selectedTextContent;
+
+			openMenu: (focusIndex) => {
+				this.refs.menu.show({focusIndex})
 			},
-			getNumberOfOptions: () => this.props.children.length,
-			getTextForOptionAtIndex: (index) => this.props.children[index].props.children,
-			getValueForOptionAtIndex: (index) => this.props.children[index].props.id || this.props.children[index].props.children,
-			setAttrForOptionAtIndex: (index, attr, value) => this.props.children[index].props[attr] = value,
-			rmAttrForOptionAtIndex: (index, attr) => delete this.props.children[index].props[attr],
-			getOffsetTopForOptionAtIndex: (index) => this.props.children[index].offsetTop,
+			isMenuOpen: () => this.refs.menu.open,
+
+			setSelectedTextContent: (selectedTextContent) => {
+				this.state.selectedText = selectedTextContent
+			},
+
+			getNumberOfOptions: () => Children.count(this.state.children),
+			getTextForOptionAtIndex: (index) => this.state.children[index].props.children,
+			getValueForOptionAtIndex: (index) => this.state.children[index].props.id || this.state.children[index].props.children,
+
+			setAttrForOptionAtIndex: (index, attr, value) => {
+				this.state.children = Children.map(this.state.children, (child, idx) => {
+					let obj = {}
+					obj[attr] = value
+					return idx === index ? React.cloneElement(child, obj) : child
+				})
+			},
+			rmAttrForOptionAtIndex: (index, attr) => {
+				this.state.children = Children.map(this.state.children, (child, idx) => {
+					let obj = {}
+					obj[attr] = null
+					return idx === index ? React.cloneElement(child, obj) : child
+				})
+			},
+			getOffsetTopForOptionAtIndex: (index) => this.state.children[index].offsetTop,
+
 			registerMenuInteractionHandler: (type, handler) => this.refs.menu.listen(type, handler),
 			deregisterMenuInteractionHandler: (type, handler) => this.refs.menu.unlisten(type, handler),
-			notifyChange: () => this.emit(MDCSelectFoundation.strings.CHANGE_EVENT, this),
+			notifyChange: () => this.dispatch(CHANGE_EVENT, this),
+
 			getWindowInnerHeight: () => window.innerHeight,
 		})
 		
@@ -81,22 +111,13 @@ class Select extends PureComponent {
 	get value(){
 		return this.refs.input.value
 	}
-
-	render(){
-
-		return(
-			<div ref="root" role="listbox" tabIndex="-1"
-				className={`mdc-select ${this.state.classes.toJS().join(' ')}`}
-				style={this.state.style}
-			>
-				<span className="mdc-select__selected-text">
-					{this.props.selectedText}
-				</span>
-				<Menu ref="menu">
-					{this.props.children}
-				</Menu>
-			</div>
-		)
+	
+	dispatch(type, data) {
+		this.refs.root.dispatchEvent(new CustomEvent(type, {
+			detail: {
+				data
+			}
+		}))
 	}
 	
 	componentDidMount() {
@@ -120,6 +141,24 @@ class Select extends PureComponent {
 			helperTextClasses: this.state.helperTextClasses[props.persistentHelperText ? 'add' : 'remove']('mdc-textfield-helptext--persistent')
 		});
 		
+	}
+
+	
+	render(){
+
+		return(
+			<div ref="root" role="listbox" tabIndex="-1"
+				className={`mdc-select ${this.state.classes.toJS().join(' ')}`}
+				style={this.state.style}
+			>
+				<span className="mdc-select__selected-text">
+					{this.state.selectedText}
+				</span>
+				<Menu ref="menu">
+					{this.state.children}
+				</Menu>
+			</div>
+		)
 	}
 
 }
