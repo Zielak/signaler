@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 
 import * as firebase from 'firebase'
 import Main from './main'
+import Connection from './connection'
 
 
 // Initialize Firebase
@@ -14,6 +15,8 @@ const config = {
 	storageBucket: "webrtcsignaler.appspot.com",
 	messagingSenderId: "964935208268"
 }
+
+const connection = new Connection()
 
 const state = {
 	userName: undefined,
@@ -37,6 +40,18 @@ document.addEventListener('DOMContentLoaded', function() {
 	//
 	// // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
 	
+	initUsersDB()
+
+	Main.events.on('connect', data => connection.joinRoom({
+		room: 'room1',
+		userName: data
+	}))
+	
+	Main.events.on('start', e => {})
+
+})
+
+function initUsersDB(){
 	var users = firebase.database().ref('users')
 
 	users.on('value', snapshot => {
@@ -58,38 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			command: 'REMOVE'
 		})
 	})
-
-
-	Main.events.on('connect', e => addUser(e))
-
-})
-
-function setupUser(name){
-	state.userName = name
 }
-
-function addUser(userName) {
-	state.userName = userName
-
-	// Get a key for a  user.
-	state.userKey = firebase.database().ref().child('users').push().key;
-
-	// Write the new post's data simultaneously in the posts list and the user's post list.
-	const updates = {};
-	updates['/users/' + state.userKey] = {
-		name: state.userName,
-	};
-
-	return firebase.database().ref().update(updates);
-}
-
-function removeUser() {
-	var updates = {};
-	updates['/users/' + state.userKey] = null;
-	firebase.database().ref().update(updates);
-}
-
-
 
 window.addEventListener('beforeunload', (e) => {
 	removeUser()

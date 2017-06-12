@@ -55,19 +55,39 @@ class Main extends PureComponent {
 		}
 	}
 
+	handleStartClick(e){
+		events.emit('start')
+	}
+
 	handleUserNameChange(e){
 		
 	}
 
 	componentWillMount(){
+
 	}
 
 	render(){
 		const { toolbar } = this.state;
 		
 		var users = []
-		this.state.connectedUsers.forEach((v, k) => users.push(<ListItem key={k}>{v}</ListItem>))
+		this.state.connectedUsers.forEach((v, k) => users.push(
+			<ListItem key={k} >{v}</ListItem>
+		))
 		
+		const listOfUsers = this.state.userConnected ? 
+			<Card title={`Welcome, ${this.state.userName}`}>
+				<h2>Connected users</h2>
+				<ul className="mdc-list" ref="connectedUsers">
+					{users}
+				</ul>
+				<button className="mdc-button mdc-button--raised mdc-button--accent"
+					ref={button => this.startButton_ = button}
+					onClick={e=>this.handleStartClick(e)}
+				>Start</button>
+			</Card>
+		: ''
+
 		return (
 			<main ref='main' className={toolbar.fixed ? 'mdc-toolbar-fixed-adjust' : ''}>
 				<Toolbar
@@ -78,12 +98,14 @@ class Main extends PureComponent {
 				/>
 				<Drawer
 					events={events}
-				/>
+				>
+					Something here
+				</Drawer>
 
 				<Card
+					title="Login / signup"
 					ref="loginForm"
 					visible={!this.state.userConnected}
-					title={`Welcome, ${this.state.userName}`}
 				>
 					<TextField
 						ref="userNameInput"
@@ -105,13 +127,7 @@ class Main extends PureComponent {
 					</section>
 				</Card>
 
-				<Card
-					title="Connected people"
-				>
-					<ul ref="connectedUsers">
-						{users}
-					</ul>
-				</Card>
+				{listOfUsers}
 
 			</main>
 		)

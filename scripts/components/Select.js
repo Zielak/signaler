@@ -22,16 +22,6 @@ class Select extends PureComponent {
 			selectedText: '',
 		}
 
-		if(props.multiline){
-			this.state.classes = this.state.classes.add('mdc-textfield--multiline')
-		}
-		if(props.fullWidth){
-			this.state.classes = this.state.classes.add('mdc-textfield--fullWidth')
-		}
-		if(props.persistentHelperText){
-			this.state.helperTextClasses = this.state.helperTextClasses.add('mdc-textfield-helptext--persistent')
-		}
-
 		this.foundation = new MDCSelectFoundation({
 			addClass: className => this.setState(prev => ({
 				classes: prev.classes.add(className)
@@ -41,7 +31,7 @@ class Select extends PureComponent {
 			})),
 
 			setAttr: (attr, value) => this.refs.root.setAttribute(attr, value),
-			rmAttr: (attr, value) => this.refs.root.removeAttribute(attr, value),
+			rmAttr: (attr, value) => this.refs.root.removeAttribute(attr),
 
 			computeBoundingRect: () => this.refs.root.getBoundingClientRect(),
 			registerInteractionHandler: (type, handler) => {
@@ -122,24 +112,21 @@ class Select extends PureComponent {
 	
 	componentDidMount() {
 		this.foundation.init()
+		this.foundation.resize()
 	}
 	componentWillUnmount() {
 		this.foundation.destroy()
 	}
 	componentDidUpdate(){
-		this.foundation.resize()
+		// this.foundation.resize()
 	}
 	componentWillReceiveProps(props) {
 		this.setState({
 			classes: this.state.classes[props.multiline ? 'add' : 'remove']('mdc-textfield--multiline')
-		});
+		})
 		this.setState({
 			classes: this.state.classes[props.fullWidth ? 'add' : 'remove']('mdc-textfield--fullwidth')
-		});
-
-		this.setState({
-			helperTextClasses: this.state.helperTextClasses[props.persistentHelperText ? 'add' : 'remove']('mdc-textfield-helptext--persistent')
-		});
+		})
 		
 	}
 

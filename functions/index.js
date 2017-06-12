@@ -28,3 +28,20 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
 // 		socket.emit('full', room);
 // 	}
 // });
+
+exports.getIpAddr = functions.https.onRequest((req, res) => {
+	res.status(200).send(req.ips[0])
+})
+
+
+exports.setHostOnFirstUser = functions.database.ref('/users/{id}')
+.onWrite(event => {
+	const user = event.data.val()
+	const roomId = user.room
+	const userKey = event.data.key
+
+	event.data.ref.root.ref('/rooms/'+roomId).child('host').set({
+		userId: userKey,
+		userName: user.name
+	})
+})

@@ -3,8 +3,6 @@ import ReactDOM from 'react-dom'
 
 import {Set as ImmutableSet, Map as ImmutableMap} from 'immutable'
 
-import '@material/list/dist/mdc.list.min.css'
-
 class List extends PureComponent{
 
 	constructor(props, context){

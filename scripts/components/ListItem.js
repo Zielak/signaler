@@ -17,6 +17,32 @@ class ListItem extends React.Component {
 	}
 	
 	render(){
+
+		const detailIcon = this.props.detailIcon ?
+			<i 
+				className="mdc-list-item__start-detail material-icons"
+				aria-hidden="true"
+			>{this.props.detailIcon}</i>
+		: ''
+
+		const endDetail = !!this.props.endDetail.icon ?
+			<a href="#" className="mdc-list-item__end-detail material-icons"
+				aria-label={this.props.endDetail.title} title={this.props.endDetail.title}
+				onClick={e=>this.props.endDetail.handleClick(e)}>
+				{this.props.endDetail.icon}
+			</a>
+		: ''
+
+
+		let elements = <span className="mdc-list-item__text">
+				{this.props.children}
+				{detailIcon}
+				{endDetail}
+				{(!!this.props.secondaryText && <span className="mdc-list-item__text__secondary">
+					{this.props.secondaryText}
+				</span>)}
+			</span>
+
 		return(
 			<li ref="root"
 				className="mdc-list-item"
@@ -27,8 +53,7 @@ class ListItem extends React.Component {
 				style={{transitionDelay: this.props.transitionDelay}}
 				id={this.props.id}
 			>
-				{this.props.children}
-				{/*{this.props.focused && (<i>F</i>)}*/}
+				{elements}
 			</li>
 		)
 	}
@@ -36,16 +61,24 @@ class ListItem extends React.Component {
 }
 
 ListItem.propTypes = {
-	transitionDelay: PropTypes.string,
-	focused: PropTypes.bool,
 	id: PropTypes.string,
+	dense: PropTypes.bool,
+	detailIcon: PropTypes.string,
+	endDetail: PropTypes.object,
+	secondaryText: PropTypes.string,
+	focused: PropTypes.bool,
+	transitionDelay: PropTypes.string,
 	'aria-selected': PropTypes.string
 }
 
 ListItem.defaultProps = {
-	transitionDelay: '',
-	focused: false,
 	id: '',
+	dense: false,
+	detailIcon: '',
+	endDetail: {},
+	secondaryText: '',
+	focused: false,
+	transitionDelay: '',
 	'aria-selected': ''
 }
 
