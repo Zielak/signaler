@@ -52,9 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
 })
 
 function initUsersDB(){
-	var users = firebase.database().ref('users')
+	var usersRef = firebase.database().ref('users')
 
-	users.on('value', snapshot => {
+	usersRef.on('value', snapshot => {
 		const arr = []
 		snapshot.forEach(el => {
 			arr.push({
@@ -67,7 +67,7 @@ function initUsersDB(){
 			command: 'UPDATE'
 		}))
 	})
-	users.on('child_removed', oldSnapshot => {
+	usersRef.on('child_removed', oldSnapshot => {
 		Main.events.emit('updateUsers', {
 			users: [oldSnapshot],
 			command: 'REMOVE'
@@ -76,7 +76,7 @@ function initUsersDB(){
 }
 
 window.addEventListener('beforeunload', (e) => {
-	removeUser()
+	connection.removeUser()
 })
 
 import '../assets/icon/meeple-128.png'
