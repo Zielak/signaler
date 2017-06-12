@@ -1,11 +1,12 @@
-const functions = require('firebase-functions');
+const functions = require('firebase-functions')
+const admin = require('firebase-admin')
 
 // Create and Deploy Your First Cloud Functions
 // https://firebase.google.com/docs/functions/write-firebase-functions
 
 exports.helloWorld = functions.https.onRequest((request, response) => {
- response.send("Hello from Firebase!");
-});
+ response.send("Hello from Firebase!")
+})
 
 // exports.create = functions. ', function(room) {
 // 	log('Received request to create or join room ' + room);
@@ -40,8 +41,37 @@ exports.setHostOnFirstUser = functions.database.ref('/users/{id}')
 	const roomId = user.room
 	const userKey = event.data.key
 
-	event.data.ref.root.ref('/rooms/'+roomId).child('host').set({
+	admin.database.ref('/rooms/'+roomId).child('host').set({
 		userId: userKey,
 		userName: user.name
 	})
 })
+
+exports.setHostWhenHostLeaves = functions.database.ref('/users/{id}')
+.onWrite(event => {
+	// See if the user is leaving
+	if( !(event.data.previous.exists() && !event.data.exists()) ){
+		return
+	}
+
+	// See if he's a host
+	const hostOf = event.data.previous.child('hostOf').val()
+
+	if(!hostOf){
+		return
+	}
+
+	// Get any first user in the room
+	const hostCandidate = admin.database.ref('/users')
+		.orderByChild('room')
+		.equalTo(hostOf)
+		.limitToFirst(1)
+	
+	if(!hostCandidate){
+		console.log('failed to promote new host')
+		return
+	}
+
+	hostCandidate.child('hostOf').set(hostOf)
+})
+

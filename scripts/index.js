@@ -16,7 +16,7 @@ const config = {
 	messagingSenderId: "964935208268"
 }
 
-const connection = new Connection()
+let connection
 
 const state = {
 	userName: undefined,
@@ -28,6 +28,8 @@ const log = console.log.bind(console)
 document.addEventListener('DOMContentLoaded', function() {
 
 	firebase.initializeApp(config)
+
+	connection = new Connection()
 
 	ReactDOM.render(<Main/>, document.getElementById('main'))
 	// // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥

@@ -26,8 +26,6 @@ var sdpConstraints = {
 
 /////////////////////////////////////////////
 
-var room = 'foo';
-
 // if (room !== '') {
 // 	socket.emit('create or join', room);
 // 	log('Attempted to create or  join room', room);
@@ -59,10 +57,16 @@ var room = 'foo';
 
 ////////////////////////////////////////////////
 
+firebase.database.enableLogging(function(message) {
+	console.log("[FIREBASE]", message);
+});
+
+let db
+
 class Connection {
 
 	constructor() {
-
+		db = firebase.database()
 	}
 
 	setupUser(name) {
@@ -78,32 +82,46 @@ class Connection {
 			host: '',
 		};
 
-		return firebase.database().ref().update(updates);
+		return db.ref().update(updates);
 	}
 
 	joinRoom({ userName, room }) {
 		log('joining room '+room)
-		this.userName = userName
 
-		// Get a key for a  user.
-		this.userKey = firebase.database().ref().child('users').push().key;
+		db.ref('rooms/'+room).once('value').then(dataSnapshot => {
 
-		// Write the new post's data simultaneously in the posts list and the user's post list.
-		const updates = {};
-		updates['/users/' + this.userKey] = {
-			name: this.userName,
-			room: room,
-			isHost: false,
-			messages: [],
-		};
+			this.userName = userName
+			// Get a key for this user.
+			this.userKey = db.ref().child('users').push().key
 
-		return firebase.database().ref().update(updates);
+			// Get room info
+			let hostOf = ''
+			if(!dataSnapshot.host){
+				// This room doesn't have a host yet, now you're it!
+				db.ref('/rooms/'+room+'/host').set({
+					userKey: this.userKey,
+					userName: userName
+				})
+				hostOf = room
+				log(`You're now the host of ${room}`)
+			}
+
+			const updates = {};
+			updates['/users/' + this.userKey] = {
+				name: this.userName,
+				room: room,
+				hostOf: hostOf,
+				messages: [],
+			};
+
+			db.ref().update(updates)
+		})
 	}
 
 	removeUser() {
 		var updates = {};
 		updates['/users/' + this.userKey] = null;
-		firebase.database().ref().update(updates);
+		db.ref().update(updates);
 	}
 
 	// This client receives a message
@@ -111,7 +129,7 @@ class Connection {
 		if (this.userKey) {
 			throw new Error('no userKey')
 		}
-		const messagesRef = firebase.database().ref('users/' + this.userKey + '/messages')
+		const messagesRef = db.ref('users/' + this.userKey + '/messages')
 
 		messagesRef.on('value', snapshot => {
 			const message = snapshot.val()
@@ -138,7 +156,7 @@ class Connection {
 			}
 		})
 
-		const hostRef = firebase.database().ref('users/' + this.userKey + '/host')
+		const hostRef = db.ref('users/' + this.userKey + '/host')
 		hostRef.on('value', snapshot => {
 			log('looks like youre the host now.')
 			isInitiator = snapshot.val()
