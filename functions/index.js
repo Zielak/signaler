@@ -38,13 +38,21 @@ exports.getIpAddr = functions.https.onRequest((req, res) => {
 exports.setHostOnFirstUser = functions.database.ref('/users/{id}')
 .onWrite(event => {
 	const user = event.data.val()
-	const roomId = user.room
 	const userKey = event.data.key
+	const roomId = user.room
 
-	admin.database.ref('/rooms/'+roomId).child('host').set({
-		userId: userKey,
-		userName: user.name
+	// Get room info, and see if it has host already
+	admin.database.ref('/rooms/'+roomId+'/host').once('value').then(snapshot => {
+		const val = snapshot.val()
+		// No host yet, hurray!
+		if (!!val) {
+			admin.database.ref('/rooms/'+roomId+'/host').set({
+				userId: userKey,
+				userName: user.name
+			})
+		}
 	})
+
 })
 
 exports.setHostWhenHostLeaves = functions.database.ref('/users/{id}')
@@ -66,12 +74,12 @@ exports.setHostWhenHostLeaves = functions.database.ref('/users/{id}')
 		.orderByChild('room')
 		.equalTo(hostOf)
 		.limitToFirst(1)
-	
-	if(!hostCandidate){
-		console.log('failed to promote new host')
-		return
-	}
 
-	hostCandidate.child('hostOf').set(hostOf)
+	if(!hostCandidate){
+		console.log('no more users. Clearing host of the room')
+		admin.database.ref('/rooms/'+hostOf+'/host').remove()
+	} else {
+		hostCandidate.child('hostOf').set(hostOf)
+	}
 })
 

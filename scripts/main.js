@@ -27,7 +27,7 @@ class Main extends PureComponent {
 			if(command === 'UPDATE'){
 				users.forEach( el => {
 					this.setState(prev => ({
-						connectedUsers: prev.connectedUsers.set(el.key, el.name)
+						connectedUsers: prev.connectedUsers.set(el.key, el)
 					}))
 				})
 			} else if (command === 'REMOVE') {
@@ -60,7 +60,7 @@ class Main extends PureComponent {
 	}
 
 	handleUserNameChange(e){
-		
+
 	}
 
 	componentWillMount(){
@@ -69,13 +69,15 @@ class Main extends PureComponent {
 
 	render(){
 		const { toolbar } = this.state;
-		
+
 		var users = []
 		this.state.connectedUsers.forEach((v, k) => users.push(
-			<ListItem key={k} >{v}</ListItem>
+			<ListItem key={k}
+				detailIcon={v.isHost ? 'star rate' : ''}
+			>{v.name}</ListItem>
 		))
-		
-		const listOfUsers = this.state.userConnected ? 
+
+		const listOfUsers = this.state.userConnected ?
 			<Card title={`Welcome, ${this.state.userName}`}>
 				<h2>Connected users</h2>
 				<ul className="mdc-list" ref="connectedUsers">
