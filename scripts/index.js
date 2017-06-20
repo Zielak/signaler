@@ -61,7 +61,8 @@ function initUsersDB(){
 		snapshot.forEach(el => {
 			arr.push({
 				key: el.key,
-				name: el.val().name
+				name: el.val().name,
+				isHost: el.val().hostOf === connection.room
 			})
 		})
 		Main.events.emit('updateUsers', ({

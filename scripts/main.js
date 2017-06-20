@@ -27,7 +27,10 @@ class Main extends PureComponent {
 			if(command === 'UPDATE'){
 				users.forEach( el => {
 					this.setState(prev => ({
-						connectedUsers: prev.connectedUsers.set(el.key, el.name)
+						connectedUsers: prev.connectedUsers.set(el.key, {
+							name: el.name,
+							isHost: el.isHost
+						})
 					}))
 				})
 			} else if (command === 'REMOVE') {
@@ -72,7 +75,7 @@ class Main extends PureComponent {
 		
 		var users = []
 		this.state.connectedUsers.forEach((v, k) => users.push(
-			<ListItem key={k} >{v}</ListItem>
+			<ListItem key={k} detailIcon={v.isHost || 'home'}>{v.name}</ListItem>
 		))
 		
 		const listOfUsers = this.state.userConnected ? 

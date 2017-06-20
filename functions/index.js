@@ -1,5 +1,6 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
+admin.initializeApp(functions.config().firebase);
 
 // Create and Deploy Your First Cloud Functions
 // https://firebase.google.com/docs/functions/write-firebase-functions
@@ -37,15 +38,20 @@ exports.getIpAddr = functions.https.onRequest((req, res) => {
 
 exports.setHostOnFirstUser = functions.database.ref('/users/{id}')
 .onWrite(event => {
+	if(!event.data.exists()) return
 	const user = event.data.val()
 	const roomId = user.room
 	const userKey = event.data.key
 
-	admin.database.ref('/rooms/'+roomId).child('host').set({
-		userId: userKey,
-		userName: user.name
-	})
+	return setHost(userKey, user.name)
 })
+
+function setHost(userKey, userName){
+	return admin.database.ref('/rooms/'+roomId).child('host').set({
+		userId: userKey,
+		userName: userName
+	})
+}
 
 exports.setHostWhenHostLeaves = functions.database.ref('/users/{id}')
 .onWrite(event => {
@@ -62,16 +68,17 @@ exports.setHostWhenHostLeaves = functions.database.ref('/users/{id}')
 	}
 
 	// Get any first user in the room
-	const hostCandidate = admin.database.ref('/users')
+	return admin.database.ref('/users')
 		.orderByChild('room')
 		.equalTo(hostOf)
 		.limitToFirst(1)
-	
-	if(!hostCandidate){
-		console.log('failed to promote new host')
-		return
-	}
+		.once('value')
+		.then(snap => {
+			if (snap.exists()) {
+				hostCandidate.child('hostOf').set(hostOf)
+			}else{
+				console.log('failed to promote new host')
+			}
+		})
 
-	hostCandidate.child('hostOf').set(hostOf)
 })
-

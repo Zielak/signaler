@@ -70,7 +70,6 @@ class Connection {
 	}
 
 	setupUser(name) {
-		log('creating room '+roomName)
 		this.userName = name
 	}
 
@@ -95,8 +94,8 @@ class Connection {
 			this.userKey = db.ref().child('users').push().key
 
 			// Get room info
-			let hostOf = ''
-			if(!dataSnapshot.host){
+			let hostOf = null
+			if(!dataSnapshot.val().host){
 				// This room doesn't have a host yet, now you're it!
 				db.ref('/rooms/'+room+'/host').set({
 					userKey: this.userKey,
