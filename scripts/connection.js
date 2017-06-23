@@ -8,6 +8,8 @@ let pc;
 let remoteStream;
 let turnReady;
 
+// TODO: move whole Connection to Service.js?
+
 const log = (...args) => {
 	console.log('Connection: ' + args)
 }
