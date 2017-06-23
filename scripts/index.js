@@ -41,14 +41,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	// firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
 	//
 	// // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-	
+
 	initUsersDB()
 
 	Main.events.on('connect', data => connection.joinRoom({
 		room: 'room1',
 		userName: data
 	}))
-	
+
 	Main.events.on('start', e => {})
 
 })
@@ -57,8 +57,11 @@ function initUsersDB(){
 	var usersRef = firebase.database().ref('users')
 
 	usersRef.on('value', snapshot => {
+		if(!snapshot.val()) return
 		const arr = []
 		snapshot.forEach(el => {
+			// Ignore users of other rooms
+			if(el.val().room !== connection.room) return
 			arr.push({
 				key: el.key,
 				name: el.val().name,

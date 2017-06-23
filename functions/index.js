@@ -40,8 +40,8 @@ exports.setHostOnFirstUser = functions.database.ref('/users/{id}')
 .onWrite(event => {
 	if(!event.data.exists()) return
 	const user = event.data.val()
-	const roomId = user.room
 	const userKey = event.data.key
+	const roomId = user.room
 
 	return setHost(userKey, user.name)
 })
@@ -77,7 +77,8 @@ exports.setHostWhenHostLeaves = functions.database.ref('/users/{id}')
 			if (snap.exists()) {
 				hostCandidate.child('hostOf').set(hostOf)
 			}else{
-				console.log('failed to promote new host')
+				console.log('no more users. Clearing host of the room')
+				admin.database.ref('/rooms/'+hostOf+'/host').remove()
 			}
 		})
 

@@ -15,11 +15,11 @@ class ListItem extends React.Component {
 	componentDidUpdate() {
 		this.props.focused && this.refs.root.focus()
 	}
-	
+
 	render(){
 
 		const detailIcon = this.props.detailIcon ?
-			<i 
+			<i
 				className="mdc-list-item__start-detail material-icons"
 				aria-hidden="true"
 			>{this.props.detailIcon}</i>
@@ -34,9 +34,8 @@ class ListItem extends React.Component {
 		: ''
 
 
-		let elements = <span className="mdc-list-item__text">
+		let textElement = <span className="mdc-list-item__text">
 				{this.props.children}
-				{detailIcon}
 				{endDetail}
 				{(!!this.props.secondaryText && <span className="mdc-list-item__text__secondary">
 					{this.props.secondaryText}
@@ -53,7 +52,8 @@ class ListItem extends React.Component {
 				style={{transitionDelay: this.props.transitionDelay}}
 				id={this.props.id}
 			>
-				{elements}
+				{detailIcon}
+				{textElement}
 			</li>
 		)
 	}

@@ -14,7 +14,7 @@ const log = (...args) => {
 
 const pcConfig = {
 	'iceServers': [{
-		'urls': 'stun:stun.l.google.com:19302'
+		'url': 'stun:stun.l.google.com:19302'
 	}]
 };
 
@@ -74,7 +74,7 @@ class Connection {
 	}
 
 	createRoom(roomName) {
-		log('creating room '+roomName)
+		log('creating room ' + roomName)
 		const updates = {};
 		updates['/rooms/' + roomName] = {
 			name: roomName,
@@ -92,6 +92,8 @@ class Connection {
 			this.userName = userName
 			// Get a key for this user.
 			this.userKey = db.ref().child('users').push().key
+
+			this.room = room
 
 			// Get room info
 			let hostOf = null
@@ -113,7 +115,10 @@ class Connection {
 				messages: [],
 			};
 
-			db.ref().update(updates)
+			db.ref().update(updates).then(() => {
+			}).catch(reason => {
+				error('I failed to join the room for some reason', reason)
+			})
 		})
 	}
 
