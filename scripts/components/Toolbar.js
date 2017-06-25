@@ -114,7 +114,7 @@ class Toolbar extends PureComponent {
 						<span ref="title" className="mdc-toolbar__title">Title</span>
 					</section>
 					<section className="mdc-toolbar__section mdc-toolbar__section--align-end">
-						Section aligns to end.
+						🎲
 					</section>
 				</div>
 			</header>

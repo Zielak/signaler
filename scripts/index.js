@@ -1,16 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import Service from './service'
+import * as Service from './service'
 import Main from './main'
 
 import Connection from './connection'
 let connection
-
-const state = {
-	userName: undefined,
-	userKey: undefined,
-}
 
 const log = console.log.bind(console)
 
@@ -22,17 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	connection = new Connection()
 
-	Main.events.on('connect', data => connection.joinRoom({
-		room: 'room1',
-		userName: data
-	}))
-
-	Main.events.on('start', e => {})
-
-})
-
-window.addEventListener('beforeunload', (e) => {
-	connection.removeUser()
 })
 
 import '../assets/icon/meeple-128.png'

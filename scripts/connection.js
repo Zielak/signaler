@@ -86,50 +86,6 @@ class Connection {
 		return db.ref().update(updates);
 	}
 
-	joinRoom({ userName, room }) {
-		log('joining room '+room)
-
-		db.ref('rooms/'+room).once('value').then(dataSnapshot => {
-
-			this.userName = userName
-			// Get a key for this user.
-			this.userKey = db.ref().child('users').push().key
-
-			this.room = room
-
-			// Get room info
-			let hostOf = null
-			if(!dataSnapshot.val().host){
-				// This room doesn't have a host yet, now you're it!
-				db.ref('/rooms/'+room+'/host').set({
-					userKey: this.userKey,
-					userName: userName
-				})
-				hostOf = room
-				log(`You're now the host of ${room}`)
-			}
-
-			const updates = {};
-			updates['/users/' + this.userKey] = {
-				name: this.userName,
-				room: room,
-				hostOf: hostOf,
-				messages: [],
-			};
-
-			db.ref().update(updates).then(() => {
-			}).catch(reason => {
-				error('I failed to join the room for some reason', reason)
-			})
-		})
-	}
-
-	removeUser() {
-		var updates = {};
-		updates['/users/' + this.userKey] = null;
-		db.ref().update(updates);
-	}
-
 	// This client receives a message
 	startListening() {
 		if (this.userKey) {

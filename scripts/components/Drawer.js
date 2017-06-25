@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 
 import EventEmitter from 'eventemitter3'
 import { Set as ImmutableSet, Map as ImmutableMap } from 'immutable'
+import * as Service from '../service'
 
 import { MDCTemporaryDrawer, MDCTemporaryDrawerFoundation, util } from '@material/drawer'
 
@@ -70,16 +71,18 @@ class Drawer extends PureComponent {
 			isDrawer: (el) => el === this.refs.drawer,
 		})
 
+		this.handleOpenDrawer = function(){
+			this.open = !this.open
+		}.bind(this)
+
 	}
 
 	registerEventListeners(){
-		const e = this.props.events
-
-		e.on('menu.clicked', () => this.open = !this.open)
+		Service.on('menu.clicked', this.handleOpenDrawer)
 	}
 
 	unregisterEventListeners(){
-		const e = this.props.events
+		Service.on('menu.clicked', this.handleOpenDrawer)
 	}
 
 	get open() {
