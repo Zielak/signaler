@@ -1,6 +1,10 @@
 import * as firebase from 'firebase'
 import Main from './main'
 import Emitter from 'eventemitter3'
+import Connection from './connection'
+
+// init connection class
+const connection = new Connection()
 
 // Init emitter
 const events = new Emitter()
@@ -15,6 +19,9 @@ const config = {
 	messagingSenderId: "964935208268"
 }
 firebase.initializeApp(config)
+// firebase.database.enableLogging(function(message) {
+// 	console.log("[FIREBASE]", message);
+// })
 
 const db = firebase.database()
 const users = db.ref('users')
@@ -57,51 +64,49 @@ export function getUsers(){
 }
 
 /**
- * New uesr wants to join a room
+ * Me wants to join a room
  * 
  * @export
  * @param {any} { userName, room } 
  */
 export function joinRoom({ userName, room }) {
 	room = !!room ? room : 'room1'
-	log('joining room '+room)
+	log('joining room ' + room)
+	
+	// Get a new key for this user.
+	const userKey = db.ref().child('users').push().key
+	
+	const updates = {};
+	updates['/users/' + userKey] = {
+		name: userName,
+		room: room,
+		isHost: false,
+		messages: [],
+	};
 
-	return db.ref('rooms/'+room).once('value').then(snapshot => {
-
-		// Get a new key for this user.
-		const userKey = db.ref().child('users').push().key
-
-		// Get room info
-		let hostOf = null
-
-		if(!snapshot.val().host){
-			// This room doesn't have a host yet, now you're it!
-			db.ref('/rooms/'+room+'/host').set({ userKey, userName })
-
-			hostOf = room
-			log(`You're now the host of ${room}`)
-		}
-
-		const updates = {};
-		updates['/users/' + userKey] = {
-			name: userName,
-			room: room,
-			hostOf: hostOf,
-			messages: [],
-		};
-
-		db.ref().update(updates).then(() => {
-			events.emit('connected', {room, userKey, userName})
-		}).catch(reason => {
-			error('I failed to join the room for some reason', reason)
-		})
+	return db.ref().update(updates).then(() => {
+		events.emit('connected', {room, userKey, userName})
+	}).catch(reason => {
+		error('I failed to join the room for some reason', reason)
 	})
+}
+
+export function createRoom(roomName) {
+	// TODO: the user who creates this room should become a host
+	log('creating room ' + roomName)
+	const updates = {}
+	updates['/rooms/' + roomName] = {
+		name: roomName,
+		host: '',
+	}
+
+	return db.ref().update(updates)
 }
 
 export const disconnect = userKey => {
 	var updates = {}
 	updates['/users/' + userKey] = null
-	db.ref().update(updates)
+	return db.ref().update(updates)
 }
 
 // Below functions that will parse snapshots
@@ -111,7 +116,7 @@ export const disconnect = userKey => {
  * 
  * @param {string} roomName 
  * @param {DataSnapshot} snapshot 
- * @returns {array} filtered with only users of this room
+ * @returns {DataSnapshot-like} filtered with only users of this room
  */
 export function usersInRoom(roomName, snapshot){
 	const arr = []

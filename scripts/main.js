@@ -35,9 +35,15 @@ class Main extends PureComponent {
 			this.state.userConnected = true
 
 			Service.getUsers().then(snapshot => {
-				this.setState(prev => ({
-					connectedUsers: Service.usersInRoom(room, snapshot)
-				}))
+				Service.usersInRoom(room, snapshot).forEach(user => {
+					this.setState(prev => ({
+						connectedUsers: prev.connectedUsers.set(user.key, {
+							name: user.name,
+							room: user.room,
+							isHost: user.isHost
+						})
+					}))
+				})
 			})
 
 			Service.on('user.added', (snapshot, prevChildKey) => {
@@ -45,7 +51,7 @@ class Main extends PureComponent {
 				this.setState(prev => ({
 					connectedUsers: prev.connectedUsers.set(snapshot.key, {
 						name: snapshot.val().name,
-						isHost: snapshot.val().hostOf === this.state.room
+						isHost: snapshot.val().isHost
 					})
 				}))
 			})
@@ -61,7 +67,7 @@ class Main extends PureComponent {
 				this.setState(prev => ({
 					connectedUsers: prev.connectedUsers.set(snapshot.key, {
 						name: snapshot.val().name,
-						isHost: snapshot.val().hostOf === this.state.room
+						isHost: snapshot.val().isHost
 					})
 				}))
 			})

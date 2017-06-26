@@ -38,15 +38,35 @@ exports.getIpAddr = functions.https.onRequest((req, res) => {
 
 exports.setHostOnFirstUser = functions.database.ref('/users/{id}')
 .onWrite(event => {
-	if(!event.data.exists()) return
-	const user = event.data.val()
+	if (!event.data.exists()) return
 	const userKey = event.data.key
-	const roomId = user.room
-
-	return setHost(userKey, user.name)
+	const userName = event.data.val().name
+	const room = event.data.val().room
+	
+	_setHostOnFirstUser(room, userKey, userName)
 })
 
-function setHost(userKey, userName){
+function _setHostOnFirstUser(room, userKey, userName) {
+	// See if the room already has host.
+	return admin.database.ref('/rooms/' + room + '/host').then(snapshot => {
+		console.log(`I'm in _setHostOnFirstUser ref`)
+		if (!snapshot.exists()) {
+			console.log(`room "${room}" has no host`)
+			// Update the room with new host
+			setRoomHost(room, userKey, userName)
+			console.log(`I'm after setRoomHost`)
+			// Update itself with isHost
+			admin.database.ref('/users/' + userKey).update({
+				isHost: true,
+			}, () => {
+				console.log(`User ${userName} upadted, is now a host`)
+			})
+		}
+	})
+}
+
+function setRoomHost(roomId, userKey, userName){
+	console.log(`I'm in setRoomHost (${roomId}, ${userKey}, ${userName})`)
 	return admin.database.ref('/rooms/'+roomId).child('host').set({
 		userId: userKey,
 		userName: userName
@@ -59,26 +79,27 @@ exports.setHostWhenHostLeaves = functions.database.ref('/users/{id}')
 	if( !(event.data.previous.exists() && !event.data.exists()) ){
 		return
 	}
-
 	// See if he's a host
-	const hostOf = event.data.previous.child('hostOf').val()
+	const isHost = event.data.previous.child('isHost').val()
 
-	if(!hostOf){
+	if(!isHost){
 		return
 	}
+	// Of which room he was a host
+	const room = event.data.previous.child('room').val()
 
 	// Get any first user in the room
 	return admin.database.ref('/users')
 		.orderByChild('room')
-		.equalTo(hostOf)
+		.equalTo(room)
 		.limitToFirst(1)
 		.once('value')
 		.then(snap => {
 			if (snap.exists()) {
-				hostCandidate.child('hostOf').set(hostOf)
+				snap.child('isHost').set(true)
 			}else{
 				console.log('no more users. Clearing host of the room')
-				admin.database.ref('/rooms/'+hostOf+'/host').remove()
+				admin.database.ref('/rooms/'+room+'/host').remove()
 			}
 		})
 

@@ -1,5 +1,3 @@
-import * as firebase from 'firebase'
-
 let isChannelReady = false;
 let isInitiator = false;
 let isStarted = false;
@@ -59,31 +57,13 @@ var sdpConstraints = {
 
 ////////////////////////////////////////////////
 
-firebase.database.enableLogging(function(message) {
-	console.log("[FIREBASE]", message);
-});
-
-let db
-
 class Connection {
 
 	constructor() {
-		db = firebase.database()
 	}
 
 	setupUser(name) {
 		this.userName = name
-	}
-
-	createRoom(roomName) {
-		log('creating room ' + roomName)
-		const updates = {};
-		updates['/rooms/' + roomName] = {
-			name: roomName,
-			host: '',
-		};
-
-		return db.ref().update(updates);
 	}
 
 	// This client receives a message
