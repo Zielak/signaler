@@ -78,11 +78,11 @@ class Drawer extends PureComponent {
 	}
 
 	registerEventListeners(){
-		Service.on('menu.clicked', this.handleOpenDrawer)
+		Service.events.on('menu.clicked', this.handleOpenDrawer)
 	}
 
 	unregisterEventListeners(){
-		Service.on('menu.clicked', this.handleOpenDrawer)
+		Service.events.on('menu.clicked', this.handleOpenDrawer)
 	}
 
 	get open() {

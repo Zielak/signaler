@@ -4,10 +4,10 @@ import Emitter from 'eventemitter3'
 import Connection from './connection'
 
 // init connection class
-const connection = new Connection()
+let connection
 
 // Init emitter
-const events = new Emitter()
+export const events = new Emitter()
 
 // Initialize Firebase
 const config = {
@@ -31,10 +31,8 @@ const info = (args) => console.info.apply(console, ['[Service] > ', ...args])
 const warn = (args) => console.warn.apply(console, ['[Service] > ', ...args])
 const error = (args) => console.error.apply(console, ['[Service] > ', ...args])
 
-export const on = events.on.bind(events)
-export const once = events.once.bind(events)
-
 export const init = () => {
+	 connection = new Connection()
 	// Emit users of the same room
 	users.on('value', snapshot => {
 		if(!snapshot.val()) return
@@ -84,8 +82,13 @@ export function joinRoom({ userName, room }) {
 		messages: [],
 	};
 
-	return db.ref().update(updates).then(() => {
-		events.emit('connected', {room, userKey, userName})
+	return db.ref().update(updates).then(snapshot => {
+		events.emit('connected', {
+			userKey: snapshot.key,
+			userName: snapshot.val().name,
+			room: snapshot.val().room,
+			isHost: snapshot.val().isHost,
+		})
 	}).catch(reason => {
 		error('I failed to join the room for some reason', reason)
 	})
@@ -107,6 +110,12 @@ export const disconnect = userKey => {
 	var updates = {}
 	updates['/users/' + userKey] = null
 	return db.ref().update(updates)
+}
+
+export function listenForMessages(userId) {
+	db.ref(`users/${userId}/messages`).on('child_added', snapshot => {
+		events.emit(`messages.${userId}`, snapshot)
+	})
 }
 
 // Below functions that will parse snapshots

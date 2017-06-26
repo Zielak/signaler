@@ -16,6 +16,7 @@ class Main extends PureComponent {
 			room: undefined,
 			userKey: undefined,
 			userName: undefined,
+			isHost: false,
 			userConnected: false,
 			connectedUsers: new ImmutableMap(),
 			toolbar: {
@@ -28,7 +29,7 @@ class Main extends PureComponent {
 			Service.disconnect(this.state.userKey)
 		}.bind(this)
 
-		Service.on('connected', ({room, userKey, userName}) => {
+		Service.events.on('connected', ({room, userKey, userName, isHost}) => {
 			this.state.room = room
 			this.state.userName = userName
 			this.state.userKey = userKey
@@ -46,7 +47,7 @@ class Main extends PureComponent {
 				})
 			})
 
-			Service.on('user.added', (snapshot, prevChildKey) => {
+			Service.events.on('user.added', (snapshot, prevChildKey) => {
 				// TODO: use prevChildKey
 				this.setState(prev => ({
 					connectedUsers: prev.connectedUsers.set(snapshot.key, {
@@ -56,13 +57,13 @@ class Main extends PureComponent {
 				}))
 			})
 
-			Service.on('user.removed', (snapshot) => {
+			Service.events.on('user.removed', (snapshot) => {
 				this.setState(prev => ({
 					connectedUsers: prev.connectedUsers.delete(snapshot.key)
 				}))
 			})
 
-			Service.on('user.changed', (snapshot, prevChildKey) => {
+			Service.events.on('user.changed', (snapshot, prevChildKey) => {
 				// TODO: use prevChildKey
 				this.setState(prev => ({
 					connectedUsers: prev.connectedUsers.set(snapshot.key, {
@@ -101,6 +102,10 @@ class Main extends PureComponent {
 
 	render() {
 		const { toolbar } = this.state;
+		
+		const listOfMessages = <Card title='Messages' ref='messages'>
+			<p>TODO: add a list here</p>
+		</Card>
 
 		var users = []
 		this.state.connectedUsers.forEach((v, k) => users.push(
@@ -118,6 +123,7 @@ class Main extends PureComponent {
 				<button className="mdc-button mdc-button--raised mdc-button--accent"
 					ref={button => this.startButton_ = button}
 					onClick={e => this.handleStartClick(e)}
+					disabled={this.state}
 				>Start</button>
 			</Card>
 			: ''

@@ -1,3 +1,5 @@
+import * as Service from './service'
+
 let isChannelReady = false;
 let isInitiator = false;
 let isStarted = false;
@@ -60,20 +62,23 @@ var sdpConstraints = {
 class Connection {
 
 	constructor() {
-	}
-
-	setupUser(name) {
-		this.userName = name
+		this.userName = undefined
+		this.userKey = undefined
+		this.room = undefined
+		
+		Service.events.on('connected', ({userName, userKey, room}) => {
+			this.userName = userName
+			this.userKey = userKey
+			this.room = room
+			
+			startListening()
+		})
 	}
 
 	// This client receives a message
 	startListening() {
-		if (this.userKey) {
-			throw new Error('no userKey')
-		}
-		const messagesRef = db.ref('users/' + this.userKey + '/messages')
-
-		messagesRef.on('value', snapshot => {
+		Service.listenForMessages(this.userKey)
+		Service.events.on(`messages.${this.userKey}`, snapshot => {
 			const message = snapshot.val()
 			log('Client received message:', message)
 

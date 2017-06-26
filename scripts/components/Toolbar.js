@@ -8,6 +8,7 @@ import {getCorrectEventName} from '@material/animation/dist/mdc.animation'
 import {MDCToolbar, MDCToolbarFoundation} from '@material/toolbar/dist/mdc.toolbar'
 import '@material/toolbar/dist/mdc.toolbar.min.css'
 
+import * as Service from '../service'
 
 class Toolbar extends PureComponent {
 
@@ -106,7 +107,7 @@ class Toolbar extends PureComponent {
 							className="material-icons"
 							onClick={event=>{
 								event.preventDefault()
-								this.props.events.emit('menu.clicked')
+								Service.events.emit('menu.clicked')
 							}}
 						>
 							<span className="material-icons">menu</span>
