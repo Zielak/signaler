@@ -26,10 +26,10 @@ firebase.initializeApp(config)
 const db = firebase.database()
 const users = db.ref('users')
 
-const log = (args) => console.log.apply(console, ['[Service] > ', ...args])
-const info = (args) => console.info.apply(console, ['[Service] > ', ...args])
-const warn = (args) => console.warn.apply(console, ['[Service] > ', ...args])
-const error = (args) => console.error.apply(console, ['[Service] > ', ...args])
+const log = (...args) => console.log.apply(console, ['[Service] > ', ...args])
+const info = (...args) => console.info.apply(console, ['[Service] > ', ...args])
+const warn = (...args) => console.warn.apply(console, ['[Service] > ', ...args])
+const error = (...args) => console.error.apply(console, ['[Service] > ', ...args])
 
 export const init = () => {
 	 connection = new Connection()
