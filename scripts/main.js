@@ -13,6 +13,7 @@ class Main extends PureComponent {
 		super(props, context)
 
 		this.state = {
+			view: 'login',
 			room: undefined,
 			userKey: undefined,
 			userName: undefined,
@@ -33,7 +34,9 @@ class Main extends PureComponent {
 			this.state.room = room
 			this.state.userName = userName
 			this.state.userKey = userKey
+			this.state.userHost = hostOf === room
 			this.state.userConnected = true
+			this.state.view = 'room'
 
 			Service.getUsers().then(snapshot => {
 				Service.usersInRoom(room, snapshot).forEach(user => {
@@ -49,6 +52,7 @@ class Main extends PureComponent {
 
 			Service.events.on('user.added', (snapshot, prevChildKey) => {
 				// TODO: use prevChildKey
+				// TODO: if current user changes => update this state
 				this.setState(prev => ({
 					connectedUsers: prev.connectedUsers.set(snapshot.key, {
 						name: snapshot.val().name,
@@ -89,7 +93,7 @@ class Main extends PureComponent {
 	}
 
 	handleStartClick(e) {
-		events.emit('start')
+		
 	}
 
 	handleUserNameChange(e) {
@@ -114,38 +118,11 @@ class Main extends PureComponent {
 			>{v.name}</ListItem>
 		))
 
-		const listOfUsers = this.state.userConnected ?
-			<Card title={`Welcome, ${this.state.userName}`}>
-				<h2>Connected users</h2>
-				<ul className="mdc-list" ref="connectedUsers">
-					{users}
-				</ul>
-				<button className="mdc-button mdc-button--raised mdc-button--accent"
-					ref={button => this.startButton_ = button}
-					onClick={e => this.handleStartClick(e)}
-					disabled={this.state}
-				>Start</button>
-			</Card>
-			: ''
-
-		return (
-			<main ref='main' className={toolbar.fixed ? 'mdc-toolbar-fixed-adjust' : ''}>
-				<Toolbar
-					fixed={toolbar.fixed}
-					fixedAdjustRef='main'
-					waterfall={toolbar.waterfall}
-					/*events={events}*/
-				/>
-				<Drawer
-					/*events={events}*/
-				>
-					Something here
-				</Drawer>
-
-				<Card
-					title="Login / signup"
+		let currentView
+		switch(this.state.view){
+			case 'login':
+				currentView = <Card title="Login / signup"
 					ref="loginForm"
-					visible={!this.state.userConnected}
 				>
 					<TextField
 						ref="userNameInput"
@@ -166,8 +143,37 @@ class Main extends PureComponent {
 						>Connect</button>
 					</section>
 				</Card>
+				break;
+			case 'room':
+				currentView = <Card title={`Welcome, ${this.state.userName}`}>
+					<h2>Connected users</h2>
+					{this.state.userHost ? (<p>You're the host now</p>) : ''}
+					<ul className="mdc-list" ref="connectedUsers">
+						{users}
+					</ul>
+					<button className="mdc-button mdc-button--raised mdc-button--accent"
+						ref={button => this.startButton_ = button}
+						onClick={e => this.handleStartClick(e)}
+						disabled={!this.state.userHost}
+					>Start</button>
+				</Card>
+		}
 
-				{listOfUsers}
+		return (
+			<main ref='main' className={toolbar.fixed ? 'mdc-toolbar-fixed-adjust' : ''}>
+				<Toolbar
+					fixed={toolbar.fixed}
+					fixedAdjustRef='main'
+					waterfall={toolbar.waterfall}
+					/*events={events}*/
+				/>
+				<Drawer
+					/*events={events}*/
+				>
+					Something here
+				</Drawer>
+
+				{currentView}
 
 			</main>
 		)

@@ -1,6 +1,7 @@
 import React, {PureComponent} from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
+import * as Service from '../service'
 
 import {Set as ImmutableSet, Map as ImmutableMap} from 'immutable'
 

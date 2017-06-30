@@ -9,32 +9,9 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
  response.send("Hello from Firebase!")
 })
 
-// exports.create = functions. ', function(room) {
-// 	log('Received request to create or join room ' + room);
-
-// 	var numClients = Object.keys(io.sockets.sockets).length;
-// 	log('Room ' + room + ' now has ' + numClients + ' client(s)');
-
-// 	if (numClients === 1) {
-// 		socket.join(room);
-// 		log('Client ID ' + socket.id + ' created room ' + room);
-// 		socket.emit('created', room, socket.id);
-
-// 	} else if (numClients === 2) {
-// 		log('Client ID ' + socket.id + ' joined room ' + room);
-// 		io.sockets.in(room).emit('join', room);
-// 		socket.join(room);
-// 		socket.emit('joined', room, socket.id);
-// 		io.sockets.in(room).emit('ready');
-// 	} else { // max two clients
-// 		socket.emit('full', room);
-// 	}
-// });
-
 exports.getIpAddr = functions.https.onRequest((req, res) => {
 	res.status(200).send(req.ips[0])
 })
-
 
 exports.setHostOnFirstUser = functions.database.ref('/users/{id}')
 .onWrite(event => {
@@ -89,7 +66,19 @@ exports.setHostWhenHostLeaves = functions.database.ref('/users/{id}')
 	const room = event.data.previous.child('room').val()
 
 	// Get any first user in the room
-	return admin.database.ref('/users')
+	queryHostCandidate(hostOf).then(snap => {
+		if (snap.exists()) {
+			snap.child('hostOf').set(hostOf)
+			return setRoomHost(hostOf, snap.key, snap.val().name)
+		}else{
+			console.log('no more users. Clearing host of the room')
+			return functions.database.ref('/rooms/'+hostOf+'/host').remove()
+		}
+	})
+})
+
+function queryHostCandidate(hostOf){
+	return functions.database.ref('/users')
 		.orderByChild('room')
 		.equalTo(room)
 		.limitToFirst(1)
@@ -102,5 +91,4 @@ exports.setHostWhenHostLeaves = functions.database.ref('/users/{id}')
 				admin.database.ref('/rooms/'+room+'/host').remove()
 			}
 		})
-
-})
+}
